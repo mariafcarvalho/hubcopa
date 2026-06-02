@@ -686,4 +686,100 @@ function renderDashboard() {
 
   const filteredYT = filterItems(rawYouTube);
   document.getElementById("yt-list").innerHTML = filteredYT.slice(0, 5).map(y => `
-    <a href="${y.url}" target="_blank" class="block bg-black/40 p-2.5 border border-neutral-800 hover:border-
+    <a href="${y.url}" target="_blank" class="block bg-black/40 p-2.5 border border-neutral-800 hover:border-neutral-700 rounded-lg transition-colors">
+      <p class="text-xs text-gray-200 font-medium line-clamp-2 leading-tight"><i class="fab fa-youtube text-red-500 mr-1 text-[10px]"></i> ${y.title}</p>
+      <div class="flex items-center justify-between text-[9px] text-neutral-500 mt-2">
+        <span class="truncate max-w-[120px]">${y.channel}</span>
+        <span class="text-gold font-bold font-mono">Ver vídeo ↗</span>
+      </div>
+    </a>`).join("");
+
+  const filteredTrends = filterItems(rawTrends);
+  document.getElementById("gt-list").innerHTML = filteredTrends.map((t, idx) => `
+    <div class="flex items-center gap-2 py-1.5 border-b border-neutral-800 text-xs">
+      <span class="text-gold font-mono font-bold w-4">${String(idx+1).padStart(2, "0")}</span>
+      <span class="text-gray-300 flex-1 truncate">${t.term}</span>
+      <span class="text-green-400 font-mono text-[10px] font-bold">+${t.growth}%</span>
+    </div>`).join("");
+}
+
+function applyFilters() {
+  renderDashboard();
+}
+
+// ═══════════════════════════════════════════════
+// EXPORTAÇÕES DE DATASETS
+// ═══════════════════════════════════════════════
+function exportCSV() {
+  const rows = [["Plataforma", "Origem/Canal", "Título/Termo", "Data Coleta"]];
+  rawNews.forEach(n => rows.push(["Notícias RSS", n.src, n.title.replace(/"/g, '""'), n.date || ""]));
+  rawReddit.forEach(r => rows.push(["Reddit", `r/${r.sub}`, r.title.replace(/"/g, '""'), r.date || ""]));
+  rawTrends.forEach(t => rows.push(["Google Trends", t.cat, t.term, "Tempo Real"]));
+  
+  const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.map(val => `"${val}"`).join(",")).join("\n");
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `hub_copa_nsports_${new Date().toISOString().slice(0,10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, "F");
+  
+  doc.setFontSize(18); doc.setTextColor(198, 161, 74);
+  doc.text("NSports Intelligence | Hub Copa 2026", 15, 20);
+  doc.setFontSize(9); doc.setTextColor(120, 120, 120);
+  doc.text(`Relatório Operacional de Mídia - Gerado em: ${getTimestamp()}`, 15, 27);
+  
+  let lineY = 40;
+  doc.setFontSize(12); doc.setTextColor(198, 161, 74);
+  doc.text("Monitoramento Consolidado de Clipping e Feeds", 15, lineY);
+  lineY += 8;
+
+  doc.setFontSize(8); doc.setTextColor(220, 220, 220);
+  rawNews.slice(0, 15).forEach(n => {
+    if(lineY > 270) { doc.addPage(); doc.setFillColor(0,0,0); doc.rect(0,0,210,297,"F"); lineY = 20; }
+    const textBlock = doc.splitTextToSize(`[${n.src}] ${n.title}`, 180);
+    doc.text(textBlock, 15, lineY);
+    lineY += (textBlock.length * 4) + 2;
+  });
+  
+  doc.save(`hub_copa_nsports_${new Date().toISOString().slice(0,10)}.pdf`);
+}
+
+// ═══════════════════════════════════════════════
+// INICIALIZADOR CENTRAL
+// ═══════════════════════════════════════════════
+async function runAll() {
+  const btn = document.getElementById("btn");
+  btn.disabled = true; btn.textContent = "⏳";
+  document.getElementById("ts").textContent = "Varrendo portais e indexando menções...";
+
+  await Promise.all([
+    loadRSS(),
+    loadReddit(),
+    loadYouTube(),
+    loadGoogleTrends()
+  ]);
+
+  processIntelligence();
+  renderDashboard();
+
+  const currentTS = getTimestamp();
+  document.getElementById("ts").textContent = "Última Atualização: " + currentTS;
+  document.getElementById("insights-ts").textContent = "Atualizado: " + currentTS;
+  document.getElementById("news-ts").textContent = "Atualizado: " + currentTS;
+  
+  btn.disabled = false; btn.textContent = "↻ Forçar";
+}
+
+runAll();
+setInterval(runAll, 60 * 60 * 1000); // Atualização programada automática a cada 1 hora
+</script>
+</body>
+</html>
