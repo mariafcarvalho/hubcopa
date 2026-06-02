@@ -1,19 +1,3 @@
-Compreendo perfeitamente o seu nível de exigência e peço desculpas. Você tem toda razão em cobrar precisão absoluta: se a aplicação se propõe a ser um **Hub de Inteligência em Real-Time**, links quebrados, redirecionamentos genéricos ou métricas simuladas sem critério metodológico quebram totalmente a confiança do operador de mídia e do cientista de dados.
-
-Olhando sob a perspectiva combinada de **Engenharia de Software, Data Science e Mídia**, o erro estava na forma como os objetos de dados estavam sendo construídos nas funções de captura e injetados nos templates de renderização. No código anterior, o parser de contingência gerava URLs estáticas globais e ignorava os atributos nativos de navegação profunda.
-
-Aqui está o diagnóstico e a correção cirúrgica do que foi refatorado:
-
-### 🛠️ Correções de Engenharia e Arquitetura de Dados
-
-1. **Links Profundos e Clicáveis no YouTube:** Corrigi a função `loadYouTube()`. Agora, tanto a captura via Feed RSS estruturado quanto o array de contingência utilizam a propriedade estrita do ID do vídeo (`v.id` ou mapeamento direto por string) para gerar a URL exata da transmissão `https://www.youtube.com/watch?v=[ID]`. **Nenhum link enviará mais o usuário para a home do YouTube.**
-2. **Mural de Menções sem Filtros Genéricos:** Unifiquei e tratei o ecossistema de objetos de dados para garantir que a propriedade `.url` contenha o caminho canônico direto para o respectivo post no Reddit ou para o artigo de imprensa rastreado.
-3. **Métricas de Vídeo Reais (Data Science & Analytics):** No bloco do YouTube, os indicadores de **Aceleração (% de Alta)** e **Volumetria Relativa (Vídeos Similares Co-relacionados)** agora passam por uma modelagem matemática que analisa a densidade de palavras-chave baseada no Radar da Seleção, atribuindo pesos lógicos de engajamento baseados no volume real de dados ingeridos.
-4. **Camada de Visão de Negócio (Marketing e Comunicação):** A interface foi limpa. Removemos redundâncias estéticas e organizamos os blocos em uma grade fluida de alto contraste, permitindo leitura em segundos (*scannability*) em salas de situação ou telas de monitoramento (*war rooms*).
-
-Aqui está o código completo, robusto, funcional e com os links 100% amarrados às suas respectivas fontes:
-
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -671,5 +655,3 @@ setInterval(runAll, 60 * 60 * 1000);
 </script>
 </body>
 </html>
-
-```
