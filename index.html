@@ -1,585 +1,363 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NSports | Hub Copa 2026 — Inteligência em Tempo Real</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script>tailwind.config={theme:{extend:{colors:{gold:"#C6A14A","gold-d":"#a68233"}}}}</script>
-<style>
-body{background:#000;font-family:sans-serif}
-.badge-real{display:inline-flex;align-items:center;gap:.25rem;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:.12rem .4rem;border-radius:3px;background:rgba(74,222,128,.1);color:#4ade80;border:1px solid rgba(74,222,128,.25)}
-.badge-auto{display:inline-flex;align-items:center;gap:.25rem;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:.12rem .4rem;border-radius:3px;background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.25)}
-.badge-trend{display:inline-flex;align-items:center;gap:.25rem;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:.12rem .4rem;border-radius:3px;background:rgba(198,161,74,.1);color:#C6A14A;border:1px solid rgba(198,161,74,.25)}
-.news-card:hover{border-color:rgba(198,161,74,.4)!important;background:rgba(198,161,74,.03)!important}
-.alert-pulse{animation:ap 2s infinite}
-@keyframes ap{0%,100%{opacity:1}50%{opacity:.5}}
-.fonte-pill{font-size:.58rem;color:#777;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:3px;padding:.1rem .35rem;margin-left:.4rem;font-weight:500;letter-spacing:.04em;text-transform:uppercase;vertical-align:middle}
-select,input{background:#111;color:#ddd;border:1px solid #333;border-radius:6px;padding:.4rem .75rem;font-size:.8rem}
-select:focus,input:focus{outline:none;border-color:#C6A14A}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#333}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NSPORTS | HUB COPA 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { gold: '#e5b842', darkbg: '#0a0a0a' }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Estilização de Skeletons (Animação de Carregamento) */
+    .skeleton {
+      background: linear-gradient(90deg, #1f1f1f 25%, #2d2d2d 50%, #1f1f1f 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+    }
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Regras de Impressão de Alto QI: Força PDF A4 Preto Perfeito */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 15mm 10mm 15mm 10mm;
+      }
+      body {
+        background-color: #0a0a0a !important;
+        color: #ffffff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print { display: none !important; }
+      .print-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .grid-layout {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 16px !important;
+      }
+    }
+  </style>
 </head>
-<body class="text-white antialiased">
+<body class="bg-darkbg text-white font-sans antialiased min-h-screen flex flex-col justify-between">
 
-<div class="sticky top-0 z-50 bg-black border-b border-gold/30 px-6 py-3">
-  <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <span class="font-black text-xl tracking-tighter">N<span class="text-gold">SPORTS</span></span>
-      <span class="text-neutral-700">|</span>
-      <span class="text-neutral-400 text-xs font-medium uppercase tracking-wider">Hub Copa 2026</span>
-    </div>
-    
-    <div class="hidden lg:flex items-center gap-2">
-      <select id="f-platform" onchange="applyFilters()" class="text-xs py-1 px-2">
-        <option value="all">Todas as plataformas</option>
-        <option value="rss">Notícias RSS</option>
-        <option value="youtube">YouTube</option>
-        <option value="trends">Google Trends</option>
-      </select>
-      <select id="f-tag" onchange="applyFilters()" class="text-xs py-1 px-2">
-        <option value="all">Todos os Temas</option>
-        <option value="Logística & Ingressos">Logística & Ingressos</option>
-        <option value="Seleção Brasileira">Seleção Brasileira</option>
-        <option value="Estádios & Sedes">Estádios & Sedes</option>
-        <option value="Transmissão & Mídia">Transmissão & Mídia</option>
-        <option value="Bastidores & Elenco">Bastidores & Elenco</option>
-      </select>
-      <select id="f-time" onchange="applyFilters()" class="text-xs py-1 px-2">
-        <option value="all">Qualquer período</option>
-        <option value="24h">Últimas 24h</option>
-        <option value="7d">Últimos 7 dias</option>
-      </select>
-      <div class="relative">
-        <input id="f-search" type="text" placeholder="Filtrar palavra..." class="text-xs py-1 pl-7 pr-3 w-36" oninput="applyFilters()">
-        <i class="fa fa-search absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500 text-[10px]"></i>
-      </div>
-    </div>
-
-    <div class="flex items-center gap-2">
-      <span id="ts" class="text-neutral-600 text-[10px] hidden md:block"></span>
-      <div class="flex items-center gap-1.5 bg-gold/10 border border-gold/30 rounded-full px-2.5 py-1">
-        <div class="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></div>
-        <span class="text-gold text-[9px] font-bold uppercase tracking-widest">Auto: 5m</span>
-      </div>
-      <button onclick="exportPDF()" class="bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider transition-colors hidden md:block">
-        <i class="fa fa-file-pdf mr-1 text-red-400"></i>PDF
-      </button>
-      <button onclick="exportCSV()" class="bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider transition-colors hidden md:block">
-        <i class="fa fa-file-csv mr-1 text-green-400"></i>CSV
-      </button>
-      <button id="btn" onclick="runAll()" class="bg-gold text-black px-3 py-1.5 rounded font-black text-[10px] uppercase tracking-wider hover:opacity-80 disabled:opacity-30 transition-opacity">
-        ↻ Forçar
-      </button>
-    </div>
-  </div>
-</div>
-
- <section class="py-10 max-w-7xl mx-auto px-4 md:px-6">
-    <div class="bg-neutral-900 rounded-3xl overflow-hidden border border-neutral-800 shadow-2xl">
-      <div class="grid grid-cols-1 md:grid-cols-12 items-center">
-        <div class="md:col-span-5 bg-black p-10 flex justify-center items-center h-full border-b md:border-b-0 md:border-r border-neutral-700">
-          <span class="text-gold font-black text-3xl tracking-widest">FIFA 2026</span>
+  <div>
+    <header class="border-b border-neutral-800 bg-black/50 sticky top-0 z-50 backdrop-blur no-print">
+      <div class="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <img src="nsports.png" alt="NSPORTS" class="h-5 w-auto opacity-95">
+          <span class="text-neutral-700">|</span>
+          <span class="text-xs text-neutral-400 font-bold tracking-widest uppercase">Hub Copa 2026</span>
         </div>
-        <div class="md:col-span-7 p-10 md:p-16">
-          <h3 class="text-gold font-bold uppercase tracking-[.3em] text-sm mb-6 flex items-center gap-3">
-            <span class="w-8 h-px bg-gold"></span> Manifesto
-          </h3>
-          <div class="text-gray-200 text-xl leading-relaxed italic space-y-4 font-light">
-            <p>Todo mundo tem um jeito único de torcer.</p>
-            <p>Um grito, um amuleto, uma camisa.</p>
-            <p>Mas quando o Brasil entra em campo, <strong class="text-white font-bold">o país todo para.</strong></p>
-            <p>A emoção rola solta, a paixão ecoa. As vozes se unem.</p>
-            <p>Na Copa do Mundo, somos todos do mesmo time.</p>
-            <p>Não importa a idade nem a região.</p>
-            <p><strong class="text-white font-bold">Somos uma nação.</strong> Porque só aqui tem...</p>
+        
+        <div class="flex items-center gap-3">
+          <div class="text-right flex flex-col justify-center">
+            <span id="update-time" class="text-xs text-neutral-500 font-medium">Sincronizando...</span>
+            <span class="text-[9px] text-gold/80 font-bold uppercase tracking-wider flex items-center justify-end gap-1 mt-0.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-gold inline-block animate-pulse"></span> Atualizado a cada 1h
+            </span>
           </div>
-          <div class="mt-10">
-            <p class="text-2xl md:text-3xl font-black italic tracking-tighter leading-none">
-              <span class="text-gold">A COPA QUE O BRASIL QUER VER</span>
-            </p>
-          </div>
+          <button onclick="baixarExcel()" class="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-xs font-bold px-4 py-2 rounded flex items-center gap-2 transition-all">
+            <i class="fa-solid fa-file-excel text-green-500"></i> BAIXAR EXCEL
+          </button>
+          <button onclick="window.print()" class="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-xs font-bold px-4 py-2 rounded flex items-center gap-2 transition-all">
+            <i class="fa-solid fa-file-pdf text-red-500"></i> BAIXAR PDF
+          </button>
+          <button id="btn-refresh" onclick="run()" class="bg-gold hover:bg-opacity-90 text-black text-xs font-black px-4 py-2 rounded flex items-center gap-2 transition-all">
+            <i class="fa-solid fa-rotate"></i> ATUALIZAR
+          </button>
         </div>
       </div>
-    </div>
-  </section>
+    </header>
 
-<div class="max-w-7xl mx-auto px-4 md:px-6 pb-16">
-
-  <section id="alerts-section" class="mt-6 mb-6 hidden">
-    <div class="bg-red-950/40 border border-red-800/50 rounded-2xl p-4">
-      <h3 class="text-red-400 font-black text-sm uppercase tracking-widest mb-3 flex items-center gap-2">
-        <span class="alert-pulse">🚨</span> Alertas Automáticos de Crise
-        <span class="badge-real ml-1">Detecção Ativa</span>
-      </h3>
-      <div id="alerts-list" class="grid md:grid-cols-3 gap-3"></div>
-    </div>
-  </section>
-
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-6 mb-6" id="source-status"></div>
-
-  <section class="mb-8">
-    <div class="bg-neutral-900 rounded-2xl border border-neutral-800 p-6 shadow-xl">
-      <div class="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-neutral-800 pb-4 mb-6 gap-2">
-        <div>
-          <h2 class="text-white font-black text-lg uppercase tracking-wider flex items-center gap-2">
-            🧠 Motor de Inteligência & Insights
-            <span class="badge-auto">Dados Reais Vercel Engine</span>
-          </h2>
-          <p class="text-neutral-400 text-xs mt-0.5">Cruzamento algorítmico em tempo real de redes, buscas e notícias sem intermediários.</p>
-        </div>
-        <span id="insights-ts" class="text-neutral-600 text-[10px]"></span>
-      </div>
+    <main class="max-w-7xl mx-auto px-6 mt-6 print-container">
       
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4" id="engine-insights-grid"></div>
-    </div>
-  </section>
+      <section class="mb-8">
+        <div class="bg-neutral-900 rounded-3xl overflow-hidden border border-neutral-800 shadow-2xl">
+          <div class="grid grid-cols-1 md:grid-cols-12 items-center">
+            <div class="md:col-span-5 bg-black p-10 flex justify-center items-center h-full border-b md:border-b-0 md:border-r border-neutral-800">
+              <img src="logo-fifa.jpg" alt="FIFA Logo Corporate" class="max-h-48 w-auto object-contain">
+            </div>
+            <div class="md:col-span-7 p-10 md:p-14">
+              <h3 class="text-gold font-bold uppercase tracking-[.3em] text-sm mb-6 flex items-center gap-3">
+                <span class="w-8 h-px bg-gold"></span> Manifesto
+              </h3>
+              <div class="text-gray-200 text-xl leading-relaxed italic space-y-4 font-light">
+                <p>Todo mundo tem um jeito único de torcer.</p>
+                <p>Um grito, um amuleto, uma camisa.</p>
+                <p>Mas quando o Brasil entra em campo, <strong class="text-white font-bold">o país todo para.</strong></p>
+                <p>A emoção rola solta, a paixão ecoa. As vozes se unem.</p>
+                <p>Na Copa do Mundo, somos todos do mesmo time.</p>
+                <p>Não importa a idade nem a região.</p>
+                <p><strong class="text-white font-bold">Somos uma nação.</strong> Porque só aqui tem...</p>
+              </div>
+              <div class="mt-10">
+                <p class="text-2xl md:text-3xl font-black italic tracking-tighter leading-none">
+                  <span class="text-gold">A COPA QUE O BRASIL QUER VER</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-  <section class="grid lg:grid-cols-3 gap-6 mb-8">
-    <div class="bg-neutral-900 rounded-2xl border border-neutral-800 p-5 lg:col-span-1">
-      <h3 class="font-black text-base uppercase tracking-tight mb-4 flex items-center justify-between">
-        <span>🔥 Volumetria & Rankings</span>
-        <span class="badge-trend">Tendência Detectada</span>
-      </h3>
-      <div class="border-b border-neutral-800 pb-2 mb-3 flex text-[10px] text-neutral-500 font-bold uppercase">
-        <span class="w-8">Pos</span>
-        <span class="flex-1">Assunto / Categoria</span>
-        <span class="w-16 text-right">Aceleração</span>
-      </div>
-      <div id="trends-ranking-list" class="space-y-2"></div>
-    </div>
+      <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-neutral-900/40 border border-neutral-800 p-4 rounded-xl text-center">
+          <h4 id="top-player" class="text-xl font-bold text-gold">--</h4>
+          <p class="text-[10px] text-neutral-500 uppercase tracking-widest font-bold mt-1">Top Player Hype</p>
+        </div>
+        <div class="bg-neutral-900/40 border border-neutral-800 p-4 rounded-xl text-center">
+          <h4 class="text-xl font-bold text-white">5</h4>
+          <p class="text-[10px] text-neutral-500 uppercase tracking-widest font-bold mt-1">Termos Monitorados</p>
+        </div>
+        <div class="bg-neutral-900/40 border border-neutral-800 p-4 rounded-xl text-center">
+          <h4 class="text-xl font-bold text-white">5</h4>
+          <p class="text-[10px] text-neutral-500 uppercase tracking-widest font-bold mt-1">Notícias Coletadas</p>
+        </div>
+        <div class="bg-neutral-900/40 border border-neutral-800 p-4 rounded-xl text-center">
+          <h4 class="text-xl font-bold text-green-500 tracking-wide flex items-center justify-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span>ONLINE
+          </h4>
+          <p class="text-[10px] text-neutral-500 uppercase tracking-widest font-bold mt-1">Database Status</p>
+        </div>
+      </section>
 
-    <div class="bg-neutral-900 rounded-2xl border border-neutral-800 p-5 lg:col-span-2">
-      <h3 class="font-black text-base uppercase tracking-tight mb-4 flex items-center justify-between">
-        <span>📊 Inteligência Competitiva de Mídia</span>
-        <span class="badge-real">Monitoramento de Ecossistema</span>
-      </h3>
-      <div id="competitive-media-grid" class="grid md:grid-cols-2 gap-3"></div>
-    </div>
-  </section>
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-6 grid-layout">
+        
+        <div class="bg-neutral-900 border border-neutral-800 p-6 rounded-xl flex flex-col justify-between">
+          <div>
+            <h3 class="text-white font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-gold"></i> Google Trends Copa
+            </h3>
+            <p class="text-[11px] text-neutral-500 mb-4 leading-normal">
+              O <strong>Score (0-100)</strong> mede a popularidade relativa do termo. O valor 100 indica o pico de interesse de buscas no Google.
+            </p>
+            <div id="trends" class="space-y-3"></div>
+          </div>
+        </div>
 
-  <section class="grid md:grid-cols-3 gap-6 mb-8">
-    <div class="bg-neutral-900 rounded-2xl border border-neutral-800 p-5 md:col-span-1">
-      <h3 class="font-black text-base uppercase tracking-tight text-red-400 mb-4 flex items-center justify-between">
-        <span>⚠️ Riscos de Imagem</span>
-        <span class="text-red-500 text-[10px] bg-red-950/30 px-2 py-0.5 rounded border border-red-900/40 font-bold">Crítico</span>
-      </h3>
-      <div id="reputational-risks-list" class="space-y-3"></div>
-    </div>
+        <div class="bg-neutral-900 border border-neutral-800 p-6 rounded-xl flex flex-col justify-between">
+          <div>
+            <h3 class="text-white font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-rss text-orange-500"></i> Mídia Recente (RSS)
+            </h3>
+            <div id="news" class="space-y-3"></div>
+          </div>
+        </div>
 
-    <div class="bg-neutral-900 rounded-2xl border border-neutral-800 p-5 md:col-span-2">
-      <h3 class="font-black text-base uppercase tracking-tight mb-4 flex items-center justify-between">
-        <span>🎯 Próximas Pautas Recomendadas</span>
-        <span class="badge-auto">Oportunidade de Conteúdo</span>
-      </h3>
-      <div id="editorial-scores-grid" class="grid md:grid-cols-2 gap-4"></div>
-    </div>
-  </section>
+        <div class="bg-neutral-900 border border-neutral-800 p-6 rounded-xl flex flex-col justify-between">
+          <div>
+            <h3 class="text-white font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-users text-blue-500"></i> Hype Médio dos Jogadores
+            </h3>
+            <div id="jogadores" class="space-y-3"></div>
+          </div>
+        </div>
 
-  <section class="mb-8">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-      <h2 class="text-gold font-bold text-xl uppercase flex items-center gap-2">
-        <span class="border-l-4 border-gold pl-3">Notícias Coletadas</span>
-        <span class="badge-real">✅ Dados Reais</span>
-        <span class="fonte-pill">Vercel Multi-Feed</span>
-      </h2>
-      <span id="news-ts" class="text-neutral-600 text-[10px]"></span>
-    </div>
-    <div id="news-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
-  </section>
+        <div class="bg-neutral-900 border border-neutral-800 p-6 rounded-xl flex flex-col justify-between">
+          <div>
+            <h3 class="text-white font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+              <i class="fa-brands fa-youtube text-red-600"></i> YouTube Concorrentes
+            </h3>
+            <div id="youtube-concorrentes" class="space-y-4 max-h-[450px] overflow-y-auto pr-1"></div>
+          </div>
+        </div>
 
-  <section class="grid lg:grid-cols-2 gap-6">
-    <div class="bg-neutral-900 rounded-2xl border border-neutral-800 p-5">
-      <h3 class="font-black text-base uppercase tracking-tight mb-4 flex items-center justify-between">
-        <span><i class="fab fa-youtube text-red-500 mr-1"></i> YouTube Data Stream</span>
-        <span class="badge-real">Videos Coletados</span>
-      </h3>
-      <div id="yt-list" class="space-y-3"></div>
-    </div>
+        <div class="bg-neutral-900 border border-neutral-800 p-6 rounded-xl md:col-span-2 print:col-span-2">
+          <h3 class="text-white font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-lightbulb text-yellow-400"></i> Insights & Oportunidades
+          </h3>
+          <div id="insights" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+        </div>
 
-    <div class="bg-neutral-900 rounded-2xl border border-neutral-800 p-5">
-      <h3 class="font-black text-base uppercase tracking-tight mb-4 flex items-center justify-between">
-        <span><i class="fab fa-google text-blue-500 mr-1"></i> Google Trends (Brasil)</span>
-        <span class="badge-real">Ascensão Real</span>
-      </h3>
-      <div id="gt-list" class="space-y-1"></div>
-      <a href="https://trends.google.com.br/trends/explore?geo=BR&q=copa+do+mundo+2026" target="_blank" rel="noopener" class="mt-4 flex items-center justify-center gap-2 w-full py-2 border border-gold/30 text-gold text-[10px] font-bold uppercase rounded hover:bg-gold hover:text-black transition-all">
-        Mapeamento Completo de Buscas ↗
-      </a>
-    </div>
-  </section>
-
-</div>
-
-<footer class="max-w-7xl mx-auto px-6 py-8 border-t border-neutral-800 mt-12">
-  <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-    <p class="text-neutral-600 text-xs">Desenvolvido estrategicamente por <span class="text-gold font-bold">NSports & NWB</span></p>
-    <p class="text-gold font-black text-sm uppercase italic tracking-wider">A COPA QUE O BRASIL QUER VER</p>
-    <div class="flex items-center gap-3 text-[10px] text-neutral-600">
-      <span class="badge-real">✅ Dados Reais</span>
-      <span class="badge-auto">🟡 Analisado</span>
-      <span class="badge-trend">🔵 Tendência</span>
-    </div>
+      </section>
+    </main>
   </div>
-</footer>
 
-<script>
-// ═══════════════════════════════════════════════
-// ESTADO GLOBAL DO DASHBOARD (DADOS REAIS INTEGRADOS)
-// ═══════════════════════════════════════════════
-let rawNews = [];
-let rawTrends = [];
-let rawYouTube = [];
-let processedThemes = {};
+  <footer class="mt-16 border-t border-neutral-800 bg-black/40 py-6 text-xs text-neutral-500 no-print">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="text-center md:text-left space-y-1">
+        <p>Desenvolvido com excelência por <strong class="text-neutral-400">Maria Fernanda Pereira</strong> do time de <strong class="text-gold uppercase tracking-wider font-bold">BI</strong>.</p>
+        <p class="text-[11px] text-neutral-600">
+          Infraestrutura: Dados armazenados no <span class="text-neutral-500 font-medium">Google BigQuery API</span>, processados via <span class="text-neutral-500 font-medium">Cloud Functions (Python)</span> e roteados por <span class="text-neutral-500 font-medium">Vercel Serverless (Node.js)</span>.
+        </p>
+      </div>
+      <div class="text-center md:text-right font-black uppercase tracking-widest text-sm text-neutral-400">
+        Copa do Mundo 2026
+      </div>
+    </div>
+  </footer>
 
-const THEME_MAPPING = [
-  { tag: "Logística & Ingressos", keywords: ["ingresso", "ticket", "visto", "passaporte", "viagem", "hotel", "hospedagem", "voo"] },
-  { tag: "Seleção Brasileira", keywords: ["seleção", "brasil", "dorival", "convocação", "neymar", "vinicius", "vini", "endrick"] },
-  { tag: "Estádios & Sedes", keywords: ["estádio", "stadium", "arena", "eua", "méxico", "canadá", "miami", "nova york"] },
-  { tag: "Transmissão & Mídia", keywords: ["transmissão", "cazetv", "globo", "streaming", "espn", "sportv"] },
-  { tag: "Bastidores & Elenco", keywords: ["lesão", "treino", "tática", "polêmica", "crise", "bastidor", "elenco"] }
-];
+  <script>
+    function showLoading() {
+      const skeletonHtml = Array(4).fill().map(() => `
+        <div class="p-4 rounded border border-neutral-800/40 space-y-2"><div class="h-3 skeleton rounded w-1/3"></div><div class="h-4 skeleton rounded w-3/4"></div></div>
+      `).join('');
+      document.getElementById('trends').innerHTML = skeletonHtml;
+      document.getElementById('news').innerHTML = skeletonHtml;
+      document.getElementById('jogadores').innerHTML = skeletonHtml;
+      document.getElementById('youtube-concorrentes').innerHTML = skeletonHtml;
+      document.getElementById('insights').innerHTML = `<div class="h-20 skeleton rounded w-full md:col-span-3"></div>`;
+    }
 
-const getTimestamp = () => new Date().toLocaleString("pt-BR", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"});
-const calcAgo = (dateStr) => {
-  if(!dateStr) return "Recente";
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const m = Math.floor(diff/60000);
-  if (m < 0 || isNaN(m)) return "Agora";
-  if (m < 60) return `${m}m atrás`;
-  const h = Math.floor(m/60);
-  if (h < 24) return `${h}h atrás`;
-  return `${Math.floor(h/24)}d atrás`;
-};
+    async function run() {
+      showLoading();
+      const btn = document.getElementById('btn-refresh');
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> CARREGANDO`;
+      
+      try {
+        const response = await fetch('/api/dashboard');
+        const data = await response.json();
+        
+        if (data.error || data.erro) {
+          alert("Erro na API: " + (data.detalhes || data.erro));
+          return;
+        }
 
-// ═══════════════════════════════════════════════
-// FALLBACK INTEGRAÇÃO DE EMERGÊNCIA (ALTO QI)
-// ═══════════════════════════════════════════════
-const FALLBACK_NEWS = [
-  { src: "Globo Esporte", title: "Dorival Júnior esboça Seleção Brasileira titular para próximos treinos das Eliminatórias", url: "https://ge.globo.com", date: new Date().toISOString(), platform: "rss" },
-  { src: "FIFA Inside", title: "Ingressos para a Copa do Mundo 2026: Nova carga de ingressos registra recorde de acessos", url: "https://fifa.com", date: new Date().toISOString(), platform: "rss" },
-  { src: "ESPN Brasil", title: "Vini Jr desembarca nos EUA e projeta liderança do elenco canarinho rumo ao mundial", url: "https://espn.com.br", date: new Date().toISOString(), platform: "rss" }
-];
-
-const FALLBACK_TRENDS = [
-  { term: "Ingressos Copa do Mundo 2026", growth: 420, cat: "Logística & Ingressos", platform: "trends" },
-  { term: "Convocação Seleção Brasileira Dorival", growth: 310, cat: "Seleção Brasileira", platform: "trends" },
-  { term: "CazéTV ao vivo Copa do Mundo", growth: 245, cat: "Transmissão & Mídia", platform: "trends" },
-  { term: "Estádios da Copa nos Estados Unidos", growth: 160, cat: "Estádios & Sedes", platform: "trends" }
-];
-
-const FALLBACK_YOUTUBE = [
-  { title: "PREPARAÇÃO DA SELEÇÃO: Dorival faz testes táticos impressionantes!", url: "https://youtube.com", channel: "NSports", date: new Date().toISOString(), platform: "youtube" },
-  { title: "COMO COMPRAR INGRESSOS COPA 2026 (Passo a Passo Oficial)", url: "https://youtube.com", channel: "Canais Parceiros", date: new Date().toISOString(), platform: "youtube" }
-];
-
-const FALLBACK_THEMES = {
-  "Logística & Ingressos": { count: 4, weight: 15, alertCount: 0, matchWords: ["ingresso", "viagem"] },
-  "Seleção Brasileira": { count: 8, weight: 28, alertCount: 1, matchWords: ["dorival", "seleção"] },
-  "Estádios & Sedes": { count: 2, weight: 10, alertCount: 0, matchWords: ["estádio", "arena"] },
-  "Transmissão & Mídia": { count: 5, weight: 18, alertCount: 0, matchWords: ["cazetv", "streaming"] },
-  "Bastidores & Elenco": { count: 1, weight: 5, alertCount: 0, matchWords: ["treino"] }
-};
-
-// ═══════════════════════════════════════════════
-// INTEGRAÇÃO COM AS APIS DO BACKEND COM FINESSE
-// ═══════════════════════════════════════════════
-async function loadDashboardData() {
-  try {
-    const fetchWithTimeout = (url) => fetch(url, { signal: AbortSignal.timeout(3000) }).then(r => r.json());
-
-    const [resNews, resTrends, resYt, resInsights] = await Promise.all([
-      fetchWithTimeout('/api/news').catch(() => null),
-      fetchWithTimeout('/api/trends').catch(() => null),
-      fetchWithTimeout('/api/youtube').catch(() => null),
-      fetchWithTimeout('/api/insights').catch(() => null)
-    ]);
-
-    rawNews = (resNews && resNews.length) ? resNews : FALLBACK_NEWS;
-    rawTrends = (resTrends && resTrends.length) ? resTrends : FALLBACK_TRENDS;
-    rawYouTube = (resYt && resYt.length) ? resYt : FALLBACK_YOUTUBE;
-    processedThemes = (resInsights && resInsights.themes) ? resInsights.themes : FALLBACK_THEMES;
-
-  } catch (error) {
-    console.warn("Utilizando redundância inteligente de dados locais.");
-    rawNews = FALLBACK_NEWS;
-    rawTrends = FALLBACK_TRENDS;
-    rawYouTube = FALLBACK_YOUTUBE;
-    processedThemes = FALLBACK_THEMES;
-  }
-}
-
-function filterItems(items) {
-  const platform = document.getElementById("f-platform").value;
-  const tag = document.getElementById("f-tag").value;
-  const timeframe = document.getElementById("f-time").value;
-  const search = document.getElementById("f-search").value.toLowerCase();
-
-  return items.filter(i => {
-    if (platform !== "all" && i.platform !== platform) return false;
-    if (search && !((i.title||"") + " " + (i.desc||"")).toLowerCase().includes(search)) return false;
-    
-    if (tag !== "all") {
-      const targetMap = THEME_MAPPING.find(m => m.tag === tag);
-      if(targetMap) {
-        const textToTest = ((i.title||"") + " " + (i.desc||"")).toLowerCase();
-        const hasKeyword = targetMap.keywords.some(k => textToTest.includes(k));
-        if(!hasKeyword) return false;
+        window.dadosAtuais = data;
+        render(data);
+        
+        document.getElementById('update-time').innerText = `Sincronizado: ${new Date().toLocaleTimeString('pt-BR')}`;
+      } catch (err) {
+        console.error(err);
+        alert("Falha crítica ao conectar no servidor proxy.");
+      } finally {
+        btn.innerHTML = `<i class="fa-solid fa-rotate"></i> ATUALIZAR`;
       }
     }
 
-    if (timeframe === "24h" && i.date) {
-      if (Date.now() - new Date(i.date).getTime() > 86400000) return false;
-    }
-    if (timeframe === "7d" && i.date) {
-      if (Date.now() - new Date(i.date).getTime() > 604800000) return false;
-    }
-    return true;
-  });
-}
-
-// ═══════════════════════════════════════════════
-// RENDERIZAÇÃO DA INTERFACE DINÂMICA
-// ═══════════════════════════════════════════════
-function renderDashboard() {
-  const activeStatuses = [
-    { name: "News API", ok: rawNews !== FALLBACK_NEWS },
-    { name: "YouTube API", ok: rawYouTube !== FALLBACK_YOUTUBE },
-    { name: "Trends API", ok: rawTrends !== FALLBACK_TRENDS },
-    { name: "Insights Engine", ok: processedThemes !== FALLBACK_THEMES }
-  ];
-
-  document.getElementById("source-status").innerHTML = activeStatuses.map(s => `
-    <div class="bg-neutral-900 border ${s.ok ? "border-green-900/40":"border-red-900/40"} rounded-lg p-2 text-center">
-      <div class="text-[10px] font-bold flex items-center justify-center gap-1 ${s.ok ? "text-green-400":"text-red-400"}">
-        <span>●</span> ${s.name}
-      </div>
-      <div class="text-neutral-500 text-[8px] mt-0.5 uppercase">${s.ok ? "Conectado" : "Fallback Ativo"}</div>
-    </div>`).join("");
-
-  const triggerKeywords = ["crise", "cancelado", "problema", "polêmica", "lesão", "urgente", "caos", "atraso"];
-  const criticalItems = [...rawNews].filter(i => triggerKeywords.some(tk => (i.title || "").toLowerCase().includes(tk)));
-
-  const alertSec = document.getElementById("alerts-section");
-  if(criticalItems.length > 0) {
-    alertSec.classList.remove("hidden");
-    document.getElementById("alerts-list").innerHTML = criticalItems.slice(0, 3).map(c => `
-      <div class="bg-red-950/60 border border-red-800/40 rounded-xl p-3">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[9px] font-black text-red-400 uppercase tracking-widest">${c.src}</span>
-          <span class="text-[8px] text-red-300/60">${calcAgo(c.date)}</span>
-        </div>
-        <p class="text-xs text-red-100 font-medium leading-snug line-clamp-2">${c.title}</p>
-        <a href="${c.url}" target="_blank" class="text-[9px] text-red-400 hover:underline mt-1 inline-block font-bold">Investigar Pauta →</a>
-      </div>`).join("");
-  } else {
-    alertSec.classList.add("hidden");
-  }
-
-  const sortedByWeight = Object.keys(processedThemes).sort((a,b) => processedThemes[b].weight - processedThemes[a].weight);
-  
-  if(sortedByWeight.length > 0) {
-    const topGrowthTheme = sortedByWeight[0];
-    const lowGrowthTheme = sortedByWeight[sortedByWeight.length - 1];
-    const urgentTheme = Object.keys(processedThemes).sort((a,b) => processedThemes[b].alertCount - processedThemes[a].alertCount)[0];
-
-    document.getElementById("engine-insights-grid").innerHTML = `
-      <div class="bg-green-950/20 border border-green-900/40 rounded-xl p-4">
-        <div class="text-green-400 font-bold text-[10px] uppercase tracking-wider mb-1.5">📈 Crescimento Real Detectado</div>
-        <h4 class="font-bold text-sm text-white">${topGrowthTheme}</h4>
-        <p class="text-xs text-neutral-400 mt-1">Aceleração com base no volume dinâmico de monitoramento.</p>
-      </div>
-      <div class="bg-neutral-950 border border-neutral-800 rounded-xl p-4">
-        <div class="text-neutral-400 font-bold text-[10px] uppercase tracking-wider mb-1.5">📉 Relevância Estabilizada</div>
-        <h4 class="font-bold text-sm text-neutral-400">${lowGrowthTheme}</h4>
-        <p class="text-xs text-neutral-500 mt-1">Registrou estabilização de buscas orgânicas nas últimas horas.</p>
-      </div>
-      <div class="bg-red-950/20 border border-red-900/30 rounded-xl p-4">
-        <div class="text-red-400 font-bold text-[10px] uppercase tracking-wider mb-1.5">🚨 Alerta do Filtro de Mídia</div>
-        <h4 class="font-bold text-sm text-white">${urgentTheme}</h4>
-        <p class="text-xs text-neutral-400 mt-1">Gatilho automático disparado por palavras de atenção nos feeds coletados.</p>
-      </div>
-      <div class="bg-gold/5 border border-gold/20 rounded-xl p-4">
-        <div class="text-gold font-bold text-[10px] uppercase tracking-wider mb-1.5">🎯 Sugestão de Conteúdo</div>
-        <h4 class="font-bold text-sm text-white">Especial ${topGrowthTheme}</h4>
-        <p class="text-xs text-neutral-400 mt-1">Alta oportunidade para absorver engajamento antes dos concorrentes tradicionais.</p>
-      </div>
-    `;
-
-    let rankingIndex = 1;
-    document.getElementById("trends-ranking-list").innerHTML = sortedByWeight.map(themeKey => {
-      const data = processedThemes[themeKey];
-      const percentage = Math.min(Math.floor(data.weight * 12 + 45), 920);
-      return `
-        <div class="flex items-center gap-2 py-1.5 border-b border-neutral-800/60">
-          <span class="text-neutral-600 font-mono font-bold text-xs w-6">${String(rankingIndex++).padStart(2, "0")}</span>
-          <div class="flex-1 min-w-0">
-            <div class="text-xs text-gray-200 font-medium truncate">${themeKey}</div>
-            <div class="text-[8px] text-neutral-500 truncate">Termos dominantes: ${data.matchWords.join(', ')}</div>
-          </div>
-          <span class="text-green-400 font-mono text-[10px] font-bold">+${percentage}%</span>
-        </div>`;
-    }).join("");
-
-    document.getElementById("editorial-scores-grid").innerHTML = sortedByWeight.slice(0, 4).map(themeKey => {
-      const data = processedThemes[themeKey];
-      const scoreOportunidade = Math.min(Math.floor(45 + (data.weight * 4)), 99);
-      const scoreViral = Math.min(Math.floor(40 + (data.count * 3)), 98);
-      let recomendacaoTexto = `Focar em formatos rápidos sobre ${themeKey}.`;
-      if(scoreOportunidade > 75) recomendacaoTexto = `Produzir vídeos verticais e cortes rápidos estratégicos com urgência.`;
-
-      return `
-        <div class="bg-black/40 border border-neutral-800 p-4 rounded-xl">
-          <div class="flex justify-between items-start mb-2">
-            <h4 class="text-white font-bold text-xs uppercase tracking-wide truncate">${themeKey}</h4>
-            <span class="text-xs font-mono font-black text-gold bg-gold/10 px-1.5 py-0.5 rounded border border-gold/20">${scoreOportunidade} pts</span>
-          </div>
-          <div class="space-y-1.5 text-[10px]">
+    function render(d) {
+      // 1. Google Trends
+      document.getElementById('trends').innerHTML = d.trends.map((t, i) => `
+        <div class="flex justify-between items-center bg-black/30 p-2.5 rounded border border-neutral-800 text-sm">
+          <div class="flex items-center gap-2">
+            <span class="text-gold font-bold">${i + 1}.</span>
             <div>
-              <div class="flex justify-between text-neutral-400 mb-0.5"><span>Potencial Viralizador em Redes</span> <span class="text-neutral-300 font-bold">${scoreViral}%</span></div>
-              <div class="w-full bg-neutral-800 h-1 rounded-full"><div class="bg-green-400 h-1 rounded-full" style="width: ${scoreViral}%"></div></div>
+              <p class="text-gray-300 font-medium">${t.termo}</p>
+              <div class="flex gap-1.5 mt-1">
+                <span class="text-[8px] bg-neutral-800 text-neutral-400 px-1.5 py-0.5 rounded font-bold uppercase">📂 ${t.categoria || 'Geral'}</span>
+                <span class="text-[8px] bg-neutral-800 text-neutral-400 px-1.5 py-0.5 rounded font-bold uppercase">📍 ${t.pais || 'BR'}</span>
+              </div>
             </div>
-            <p class="text-neutral-400 italic text-[11px] mt-2 pt-1 border-t border-neutral-800/50">💡 Justificativa: ${recomendacaoTexto}</p>
           </div>
-        </div>`;
-    }).join("");
+          <span class="text-xs font-mono text-neutral-500">Score: <strong class="text-white">${t.score}</strong></span>
+        </div>
+      `).join('');
 
-    document.getElementById("reputational-risks-list").innerHTML = Object.keys(processedThemes).map(themeKey => {
-      const data = processedThemes[themeKey];
-      const riskScore = Math.min(Math.floor(10 + (data.alertCount * 25)), 99);
-      let statusText = "Seguro"; let statusColor = "text-green-400";
-      if(riskScore > 40 && riskScore <= 70) { statusText = "Atenção"; statusColor = "text-yellow-400"; }
-      if(riskScore > 70) { statusText = "Crítico"; statusColor = "text-red-500"; }
+      // 2. RSS Mídia
+      document.getElementById('news').innerHTML = d.noticias.map(n => `
+        <a href="${n.url}" target="_blank" class="block bg-black/30 p-2.5 rounded border border-neutral-800 text-sm hover:border-gold/40 transition-all">
+          <span class="text-[9px] text-gold font-bold uppercase flex items-center gap-1">${n.fonte} <i class="fa-solid fa-external-link text-[8px]"></i></span>
+          <p class="text-gray-300 mt-0.5 leading-snug">${n.titulo}</p>
+        </a>
+      `).join('');
 
-      return `
-        <div class="flex items-center justify-between py-1 border-b border-neutral-800/50 text-xs">
-          <span class="text-gray-300 font-medium">${themeKey}</span>
-          <div class="flex items-center gap-2 font-mono">
-            <span class="${statusColor} font-bold">[${statusText}]</span>
-            <span class="text-neutral-500">${riskScore} pts</span>
+      // 3. Ranking de Jogadores
+      document.getElementById('jogadores').innerHTML = d.jogadores.map((j, i) => `
+        <div class="bg-black/30 p-3 rounded border border-neutral-800 text-sm">
+          <div class="flex justify-between items-center">
+            <div>
+              <span class="text-gold font-bold">#${i + 1}</span> <strong class="text-white ml-0.5">${j.jogador}</strong>
+              <span class="text-[9px] text-neutral-500 block font-semibold mt-0.5">⚽ ${j.selecao || 'Geral'}</span>
+            </div>
+            <span class="text-xs font-mono font-bold text-gold">Final: ${j.score_final}</span>
           </div>
-        </div>`;
-    }).join("");
-  }
+          <div class="grid grid-cols-3 gap-1 text-[9px] text-neutral-400 mt-2.5 pt-2 border-t border-neutral-800/50 text-center">
+            <div>📱 Social: <strong>${j.score_social || 0}</strong></div>
+            <div>📰 News: <strong>${j.score_news || 0}</strong></div>
+            <div>📺 YT: <strong>${j.score_youtube || 0}</strong></div>
+          </div>
+        </div>
+      `).join('');
 
-  // Inteligência Competitiva de Mídia
-  const competitors = [
-    { channel: "CazéTV", match: ["cazetv", "casimiro"], activity: "Estável", trend: "→" },
-    { channel: "Globo Esporte", match: ["globo", "ge", "sportv"], activity: "Estável", trend: "↑" },
-    { channel: "ESPN", match: ["espn"], activity: "Estável", trend: "→" }
-  ];
-  competitors.forEach(comp => {
-    let count = rawNews.filter(n => comp.match.some(m => (n.title || "").toLowerCase().includes(m))).length;
-    if(count > 0) { comp.activity = "Alta Atividade"; comp.trend = "↑↑"; }
-  });
-  document.getElementById("competitive-media-grid").innerHTML = competitors.map(c => `
-    <div class="bg-black/30 border border-neutral-800 p-3 rounded-xl flex items-center justify-between">
-      <div>
-        <h4 class="text-gold font-bold text-xs uppercase tracking-wide">${c.channel}</h4>
-        <p class="text-[10px] text-neutral-400 mt-0.5">Mapeamento em feeds ativos</p>
-      </div>
-      <div class="text-right">
-        <span class="text-[9px] font-bold block uppercase text-neutral-500">${c.activity}</span>
-        <span class="text-xs font-bold text-green-400 font-mono">${c.trend}</span>
-      </div>
-    </div>`).join("");
+      if(d.jogadores.length > 0) {
+        document.getElementById('top-player').innerText = `${d.jogadores[0].jogador} (${d.jogadores[0].score_final})`;
+      }
 
-  // Grid de Notícias Coletadas
-  const filteredNews = filterItems(rawNews);
-  document.getElementById("news-grid").innerHTML = filteredNews.slice(0, 9).map(n => `
-    <a href="${n.url}" target="_blank" rel="noopener" class="news-card bg-neutral-900 rounded-xl p-4 border border-neutral-800 block transition-all">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-[9px] font-black uppercase text-gold bg-gold/5 px-2 py-0.5 rounded border border-gold/10">${n.src}</span>
-        <span class="text-[9px] text-neutral-500">${calcAgo(n.date)}</span>
-      </div>
-      <p class="text-xs text-gray-200 leading-snug font-medium mb-3 line-clamp-2">${n.title}</p>
-      <span class="text-[9px] text-gold/60 font-bold uppercase tracking-wider flex items-center gap-1">Acessar fonte original <i class="fa fa-arrow-right text-[7px]"></i></span>
-    </a>`).join("") || `<p class="text-neutral-500 text-xs col-span-3 text-center py-6">Nenhum registro de notícia atende aos filtros definidos.</p>`;
+      // 4. YouTube Concorrentes - Agrupado por Canal com Inteligência Analítica de Links
+      const canais = {};
+      d.youtube.forEach(v => {
+        if (!canais[v.canal]) canais[v.canal] = [];
+        canais[v.canal].push(v);
+      });
 
-  // Listagem do YouTube Stream
-  const filteredYT = filterItems(rawYouTube);
-  document.getElementById("yt-list").innerHTML = filteredYT.slice(0, 5).map(y => `
-    <a href="${y.url}" target="_blank" class="block bg-black/40 p-2.5 border border-neutral-800 hover:border-neutral-700 rounded-lg transition-colors">
-      <p class="text-xs text-gray-200 font-medium line-clamp-2 leading-tight"><i class="fab fa-youtube text-red-500 mr-1 text-[10px]"></i> ${y.title}</p>
-      <div class="flex items-center justify-between text-[9px] text-neutral-500 mt-2">
-        <span class="truncate max-w-[120px]">${y.channel}</span>
-        <span>${calcAgo(y.date)}</span>
-      </div>
-    </a>`).join("") || `<p class="text-neutral-600 text-xs text-center py-4">Sem vídeos correspondentes.</p>`;
+      document.getElementById('youtube-concorrentes').innerHTML = Object.keys(canais).map(nomeCanal => `
+        <div class="border border-neutral-800 bg-black/20 rounded-lg p-3">
+          <div class="text-xs font-black text-red-500 uppercase tracking-wider mb-2 border-b border-neutral-800/50 pb-1 flex justify-between items-center">
+            <span>📺 ${nomeCanal}</span>
+            <span class="text-[10px] text-neutral-500 font-normal">Top conteúdos</span>
+          </div>
+          <div class="space-y-2">
+            ${canais[nomeCanal].map(v => {
+              // DETECTOR ALTO QI: Se o coletor salvou a URL completa ou apenas o ID, resolve sem quebrar
+              const videoIdLimpo = v.video_id ? v.video_id.toString().trim() : '';
+              const urlFinal = videoIdLimpo.includes('http') ? videoIdLimpo : `https://www.youtube.com/watch?v=${videoIdLimpo}`;
 
-  // Listagem do Google Trends
-  const filteredTrends = filterItems(rawTrends);
-  document.getElementById("gt-list").innerHTML = filteredTrends.map((t, idx) => `
-    <div class="flex items-center gap-2 py-1.5 border-b border-neutral-800 text-xs">
-      <span class="text-gold font-mono font-bold w-4">${String(idx+1).padStart(2, "0")}</span>
-      <span class="text-gray-300 flex-1 truncate">${t.term}</span>
-      <span class="text-green-400 font-mono text-[10px] font-bold">+${t.growth}%</span>
-    </div>`).join("") || `<p class="text-neutral-600 text-xs text-center py-4">Nenhum termo de busca encontrado.</p>`;
-}
+              return `
+                <a href="${urlFinal}" target="_blank" class="block bg-neutral-900/50 p-2 rounded border border-neutral-800 hover:border-red-600/30 transition-all text-xs">
+                  <p class="text-gray-300 font-medium leading-tight hover:text-white">${v.titulo}</p>
+                  <div class="grid grid-cols-4 gap-1 text-[9px] text-neutral-500 mt-2 text-center border-t border-neutral-800/40 pt-1">
+                    <div>👁 ${Number(v.views).toLocaleString('pt-BR')}</div>
+                    <div>👍 ${Number(v.likes).toLocaleString('pt-BR')}</div>
+                    <div>💬 ${Number(v.comentarios).toLocaleString('pt-BR')}</div>
+                    <div>🔄 --</div>
+                  </div>
+                </a>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `).join('');
 
-function applyFilters() {
-  renderDashboard();
-}
+      // 5. Insights
+      document.getElementById('insights').innerHTML = d.insights.map(ins => `
+        <div class="bg-neutral-900/60 p-4 rounded-lg border border-neutral-800 border-l-4 ${ins.prioridade == 'ALTA' ? 'border-l-red-500' : 'border-l-gold'} flex flex-col justify-between">
+          <span class="text-[9px] bg-neutral-800 text-neutral-400 px-2 py-0.5 rounded font-bold uppercase self-start">💡 ${ins.categoria}</span>
+          <p class="text-sm text-gray-300 mt-3 leading-relaxed">${ins.insight}</p>
+          <span class="text-[9px] text-neutral-500 uppercase tracking-widest font-bold mt-4 block">Prioridade: ${ins.prioridade}</span>
+        </div>
+      `).join('');
+    }
 
-function exportCSV() {
-  const rows = [["Plataforma", "Origem/Canal", "Título/Termo", "Data Coleta"]];
-  rawNews.forEach(n => rows.push(["Notícias RSS", n.src, n.title.replace(/"/g, '""'), n.date || ""]));
-  rawTrends.forEach(t => rows.push(["Google Trends", t.cat, t.term, "Tempo Real"]));
-  const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.map(val => `"${val}"`).join(",")).join("\n");
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `hub_copa_intelligence_${new Date().toISOString().slice(0,10)}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
+    // Exportador Excel
+    function baixarExcel() {
+      if (!window.dadosAtuais) return alert("Por favor, clique em Atualizar primeiro.");
+      
+      let csv = "data:text/csv;charset=utf-8,\uFEFF";
+      csv += "Painel;Item/Entidade;Metrica_Principal;Filtro/Sub_Informacao;Hora_Snapshot\n";
+      const hora = new Date().toLocaleTimeString('pt-BR');
+      
+      window.dadosAtuais.trends.forEach(t => csv += `Google Trends;${t.termo};${t.score};${t.categoria} (${t.pais});${hora}\n`);
+      window.dadosAtuais.noticias.forEach(n => csv += `Noticias RSS;${n.titulo.replace(/;/g, ',')};${n.fonte};Link;${hora}\n`);
+      window.dadosAtuais.jogadores.forEach(j => csv += `Ranking Jogadores;${j.jogador};${j.score_final};${j.selecao};${hora}\n`);
+      window.dadosAtuais.youtube.forEach(y => csv += `YouTube Concorrentes;${y.titulo.replace(/;/g, ',')};${y.views};${y.canal};${hora}\n`);
+      
+      const encodedUri = encodeURI(csv);
+      const targetLink = document.createElement("a");
+      targetLink.setAttribute("href", encodedUri);
+      targetLink.setAttribute("download", `snapshot_hub_copa_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(targetLink);
+      targetLink.click();
+      document.body.removeChild(targetLink);
+    }
 
-function exportPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, "F");
-  doc.setFontSize(18); doc.setTextColor(198, 161, 74);
-  doc.text("NSports Intelligence | Hub Copa 2026", 15, 20);
-  doc.setFontSize(9); doc.setTextColor(120, 120, 120);
-  doc.text(`Relatório Analítico Consolidado - Exportado em: ${getTimestamp()}`, 15, 27);
-  let lineY = 40;
-  doc.setFontSize(12); doc.setTextColor(198, 161, 74);
-  doc.text("Principais Matérias Coletadas via RSS Engine", 15, lineY);
-  lineY += 8;
-  doc.setFontSize(8); doc.setTextColor(220, 220, 220);
-  rawNews.slice(0, 18).forEach(n => {
-    if(lineY > 275) { doc.addPage(); doc.setFillColor(0,0,0); doc.rect(0,0,210,297,"F"); lineY = 20; }
-    const textBlock = doc.splitTextToSize(`[${n.src}] ${n.title}`, 180);
-    doc.text(textBlock, 15, lineY);
-    lineY += (textBlock.length * 4) + 2;
-  });
-  doc.save(`hub_copa_report_${new Date().toISOString().slice(0,10)}.pdf`);
-}
-
-// ═══════════════════════════════════════════════
-// INICIALIZADOR CENTRAL DO DASHBOARD
-// ═══════════════════════════════════════════════
-async function runAll() {
-  const btn = document.getElementById("btn");
-  btn.disabled = true; btn.textContent = "⏳";
-  document.getElementById("ts").textContent = "Efetuando varredura estratégica...";
-
-  await loadDashboardData();
-  renderDashboard();
-
-  const currentTS = getTimestamp();
-  document.getElementById("ts").textContent = "Última Atualização: " + currentTS;
-  document.getElementById("insights-ts").textContent = "Atualizado: " + currentTS;
-  document.getElementById("news-ts").textContent = "Atualizado: " + currentTS;
-  
-  btn.disabled = false; btn.textContent = "↻ Forçar";
-}
-
-runAll();
-setInterval(runAll, 5 * 60 * 1000);
-</script>
+    window.onload = run;
+  </script>
 </body>
 </html>
